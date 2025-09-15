@@ -1,1 +1,1 @@
-# ETHOS-Demystifying-5G-O-RAN-Networks
+# ETHOS
