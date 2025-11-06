@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  power-measure:
+#    cpuset: "13-20"
+    image: ethos-power-measure:latest
+    privileged: true
+    ipc: "container:nv-cubb"
+    environment:
+      USE_ADDITIONAL_OPTIONS: --log_config.global_log_options level,nocolor,time
+        - cuBB_SDK=/opt/nvidia/cuBB
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+    network_mode: host
+    shm_size: 4096m
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./ethos-power-measure.sh:/opt/ethos-power/ethos-power-measure.sh
+      # - ./ethos-gnb-vnf.sa.band78.273prb.aerial.conf:/opt/oai-gnb/etc/gnb.conf
+      - /var/log/aerial:/var/log/aerial
+      - ../ETHOS-power/main.cpp:/opt/ethos-power/ETHOS-power/main.cpp
+      - ../ETHOS-power/src:/opt/ethos-power/ETHOS-power/src
+      - ../ETHOS-power/CMakeLists.txt:/opt/ethos-power/ETHOS-power/CMakeLists.txt
+    command: bash -c "./ethos-power-measure.sh"
+    # command: bash -c "sleep infinity"
+    container_name: power-measure
+    healthcheck:
+      test: /bin/bash -c "ps aux | grep -v grep | grep -c ethos-power-measure"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      

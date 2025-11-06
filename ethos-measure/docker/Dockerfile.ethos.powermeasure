@@ -1,0 +1,55 @@
+
+    #start from scratch for target executable
+    FROM ubuntu:focal AS ethos-power-measure
+    ENV DEBIAN_FRONTEND=noninteractive
+    ENV TZ=Europe
+    
+    RUN apt-get update && \
+        DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
+        DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+            # ---------- dependency referred from the oai-gnb-aerial dockerfile ------#
+            build-essential \
+            psmisc \
+            git \
+            xxd \
+            python3-pip \
+            wget \
+            ninja-build \
+            unzip \
+            vim-tiny \
+            nano \
+            cmake libpcap-dev libcunit1-dev libnuma-dev pkg-config \
+            software-properties-common \
+            procps \
+            libsctp1 \
+            tzdata \
+            libatlas3-base \
+            libconfig9 \
+            openssl \
+            net-tools \
+            iperf \
+            iproute2 \
+            iputils-ping \
+            moreutils \
+            gdb \
+            libusb-1.0-0 && \
+        pip3 install --ignore-installed pyyaml
+        # rm -rf /var/lib/apt/lists/*
+    
+    RUN rm -Rf /opt/ethos-power
+    WORKDIR /opt/ethos-power
+    COPY . .
+
+    # ----- set nvml lib ----- #
+    RUN ln -s /lib/x86_64-linux-gnu/libnvidia-ml.so.1 /lib/x86_64-linux-gnu/libnvidia-ml.so
+    # ----- set CppLinuxSerial lib ----- #
+    WORKDIR /usr/local/lib
+    COPY ./docker/pmd_lib/libCppLinuxSerial.a .
+    WORKDIR /usr/local/lib/cmake/CppLinuxSerial
+    COPY ./docker/pmd_lib/cmake/CppLinuxSerial/* .
+    
+    WORKDIR /opt/ethos-power
+    # RUN cd ETHOS-power && chmod a+x build.sh && ./build.sh && cp build/ETHOS-power ../
+    # WORKDIR /opt/ethos-power
+    # ------------------------------- #
+    
